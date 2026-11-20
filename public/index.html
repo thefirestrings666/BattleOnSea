@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bataille Navale</title>
+  <meta name="description" content="Bataille navale en ligne pour deux joueurs à distance.">
+  <meta name="theme-color" content="#0b1d33">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ============ ACCUEIL ============ -->
+  <main id="home" class="screen">
+    <header class="hero">
+      <div class="logo" aria-hidden="true">⚓</div>
+      <h1>Bataille Navale</h1>
+      <p class="tagline">Affronte un ami à distance. Crée une partie, envoie-lui le lien, et que le meilleur amiral gagne&nbsp;!</p>
+    </header>
+
+    <section class="card home-card">
+      <label class="field">
+        <span>Ton nom de capitaine</span>
+        <input id="name-input" type="text" maxlength="20" placeholder="Capitaine Haddock" autocomplete="nickname">
+      </label>
+
+      <button id="create-btn" class="btn btn-primary btn-big">🚢 Créer une partie</button>
+
+      <div class="divider"><span>ou</span></div>
+
+      <form id="join-form" class="join-row">
+        <input id="code-input" type="text" maxlength="5" placeholder="CODE" autocomplete="off" spellcheck="false" aria-label="Code de la partie">
+        <button type="submit" class="btn">Rejoindre</button>
+      </form>
+
+      <p id="home-error" class="error" role="alert"></p>
+    </section>
+
+    <details class="card rules">
+      <summary>📜 Règles du jeu</summary>
+      <ul>
+        <li>Chaque joueur place secrètement sa flotte sur une grille 10×10 : un porte-avions (5), un croiseur (4), un contre-torpilleur (3), un sous-marin (3) et un torpilleur (2).</li>
+        <li>Les navires ne peuvent pas se chevaucher. Ils peuvent se toucher.</li>
+        <li>Chacun son tour, on tire sur une case de la grille adverse : <b>à l'eau</b>, <b>touché</b> ou <b>coulé</b>.</li>
+        <li>Quand tu touches un navire, <b>tu rejoues</b>. À l'eau, la main passe.</li>
+        <li>Le premier qui coule toute la flotte ennemie remporte la bataille.</li>
+      </ul>
+    </details>
+
+    <p id="conn-home" class="conn-hint"></p>
+  </main>
+
+  <!-- ============ PARTIE ============ -->
+  <main id="game" class="screen hidden">
+    <header class="topbar">
+      <div class="room">
+        <span class="room-label">Partie</span>
+        <span id="room-code" class="room-code">-----</span>
+        <button id="copy-btn" class="btn btn-small" title="Copier le lien d'invitation">🔗 Inviter</button>
+      </div>
+      <div class="players">
+        <span id="me-name" class="player me"></span>
+        <span class="vs">vs</span>
+        <span id="opp-name" class="player opp"><span class="dot"></span><span class="label">…</span></span>
+      </div>
+      <div class="top-actions">
+        <button id="sound-btn" class="btn btn-small btn-icon" title="Son">🔊</button>
+        <button id="leave-btn" class="btn btn-small btn-ghost" title="Quitter la partie">Quitter</button>
+      </div>
+    </header>
+
+    <div id="status" class="status" role="status" aria-live="polite">Connexion…</div>
+
+    <div class="arena">
+      <section class="board-wrap" id="my-wrap">
+        <h2>Ta flotte</h2>
+        <div id="my-board" class="board" aria-label="Ta grille"></div>
+        <ul id="my-fleet" class="fleet-status"></ul>
+        <button id="unready-btn" class="btn btn-ghost btn-big hidden">✏️ Modifier ma flotte</button>
+      </section>
+
+      <section class="board-wrap hidden" id="enemy-wrap">
+        <h2>Flotte ennemie</h2>
+        <div id="enemy-board" class="board enemy" aria-label="Grille adverse"></div>
+        <ul id="enemy-fleet" class="fleet-status"></ul>
+      </section>
+
+      <aside id="placement-panel" class="card side-panel">
+        <h2>Déploiement</h2>
+        <p class="hint">Choisis un navire puis clique sur ta grille. <kbd>R</kbd> ou clic droit pour pivoter. Clique sur un navire posé pour le déplacer.</p>
+        <ul id="ship-picker" class="ship-picker"></ul>
+        <div class="btn-row">
+          <button id="rotate-btn" class="btn">↻ Pivoter <span id="dir-label">(horizontal)</span></button>
+          <button id="random-btn" class="btn">🎲 Aléatoire</button>
+          <button id="clear-btn" class="btn btn-ghost">Effacer</button>
+        </div>
+        <button id="ready-btn" class="btn btn-primary btn-big" disabled>Prêt au combat !</button>
+      </aside>
+    </div>
+
+    <section class="card chat" id="chat">
+      <div id="chat-log" class="chat-log" aria-live="polite"></div>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" type="text" maxlength="300" placeholder="Envoyer un message à ton adversaire…" autocomplete="off">
+        <button class="btn" type="submit">Envoyer</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- ============ FIN DE PARTIE ============ -->
+  <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
+    <div class="card overlay-card">
+      <div id="overlay-emoji" class="overlay-emoji">🏆</div>
+      <h2 id="overlay-title">Victoire !</h2>
+      <p id="overlay-text"></p>
+      <div class="btn-row center">
+        <button id="rematch-btn" class="btn btn-primary">⚔️ Revanche</button>
+        <button id="view-btn" class="btn">Voir les grilles</button>
+        <button id="home-btn" class="btn btn-ghost">Accueil</button>
+      </div>
+      <p id="rematch-status" class="hint"></p>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="assertive"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
