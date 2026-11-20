@@ -46,7 +46,7 @@ fly deploy --ha=false
 
 Le jeu est alors en ligne sur `https://battleonsea.fly.dev`.
 
-**Déploiement automatique depuis GitHub** : génère un jeton avec `fly tokens create deploy`, ajoute-le dans le dépôt GitHub (*Settings → Secrets and variables → Actions*) sous le nom `FLY_API_TOKEN`. Chaque push sur `main` lance les tests puis déploie (workflow `.github/workflows/fly-deploy.yml`).
+**Déploiement automatique depuis GitHub (sans terminal)** : crée un jeton d'organisation dans le tableau de bord Fly (*Tokens*) ou avec `fly tokens create org`, ajoute-le dans le dépôt GitHub (*Settings → Secrets and variables → Actions*) sous le nom `FLY_API_TOKEN`. Chaque push sur `main` lance les tests puis déploie (workflow `.github/workflows/fly-deploy.yml`, lançable aussi à la main depuis l'onglet *Actions*). L'app est créée automatiquement au premier déploiement.
 
 > ⚠️ Ne passe pas à plusieurs machines (`fly scale count 1` si besoin) : chaque machine aurait ses propres parties. Un redéploiement interrompt les parties en cours.
 

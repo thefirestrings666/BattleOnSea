@@ -1,5 +1,7 @@
 # Déploie automatiquement sur Fly.io à chaque push sur main.
-# Prérequis : secret GitHub FLY_API_TOKEN (créé avec `fly tokens create deploy`).
+# Prérequis : secret GitHub FLY_API_TOKEN (jeton d'organisation Fly.io,
+# créé dans le tableau de bord Fly > Tokens, ou avec `fly tokens create org`).
+# L'app est créée automatiquement au premier déploiement.
 name: Déploiement Fly.io
 
 on:
@@ -27,6 +29,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only --ha=false
+      - name: Vérifier le jeton
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "::error::Secret FLY_API_TOKEN manquant (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Créer l'app Fly si elle n'existe pas
+        run: |
+          APP=$(grep -E '^app *=' fly.toml | sed -E 's/^app *= *"([^"]+)".*/\1/')
+          if flyctl status --app "$APP" >/dev/null 2>&1; then
+            echo "L'app $APP existe déjà."
+          else
+            flyctl apps create "$APP" || {
+              echo "::error::Impossible de créer l'app '$APP' (nom déjà pris ? change 'app' dans fly.toml)."
+              exit 1
+            }
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Déployer
+        run: flyctl deploy --remote-only --ha=false
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
