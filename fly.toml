@@ -1,0 +1,37 @@
+# Configuration Fly.io — https://fly.io/docs/reference/configuration/
+# Le nom d'app doit être unique sur tout Fly.io : change-le s'il est déjà pris.
+app = "battleonsea"
+primary_region = "cdg" # Paris
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # Les parties sont gardées en mémoire : une seule machine, sinon les deux
+  # joueurs pourraient atterrir sur des serveurs différents.
+  # La machine s'endort quand personne ne joue (gratuit / quasi gratuit)
+  # et se réveille en ~1 s à la première visite.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "connections"
+    soft_limit = 500
+    hard_limit = 1000
+
+  [[http_service.checks]]
+    grace_period = "5s"
+    interval = "30s"
+    timeout = "3s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

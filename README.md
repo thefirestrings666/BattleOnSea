@@ -27,15 +27,38 @@ Variables d'environnement : `PORT` (défaut `3000`), `HOST` (défaut `0.0.0.0`).
 
 ## Jouer avec quelqu'un à distance
 
-Le serveur doit être joignable depuis Internet. Trois options :
+Le serveur doit être joignable depuis Internet. Plusieurs options :
 
-1. **Héberger gratuitement sur Render** : pousse ce dépôt sur GitHub, puis sur [render.com](https://render.com) → *New* → *Blueprint* → choisis le dépôt (le fichier `render.yaml` est déjà prêt). Tu obtiens une URL publique `https://….onrender.com` à partager.
-2. **Docker** (n'importe quel VPS, Fly.io, Railway…) :
+### Fly.io (recommandé)
+
+Le fichier `fly.toml` est prêt (région Paris, machine qui s'endort quand personne ne joue).
+
+```bash
+# 1. Installer flyctl : https://fly.io/docs/flyctl/install/
+curl -L https://fly.io/install.sh | sh
+# 2. Se connecter (ou créer un compte)
+fly auth login
+# 3. Créer l'app (le nom doit être unique ; s'il est pris, change-le aussi dans fly.toml)
+fly apps create battleonsea
+# 4. Déployer — UNE seule machine, car les parties sont en mémoire
+fly deploy --ha=false
+```
+
+Le jeu est alors en ligne sur `https://battleonsea.fly.dev`.
+
+**Déploiement automatique depuis GitHub** : génère un jeton avec `fly tokens create deploy`, ajoute-le dans le dépôt GitHub (*Settings → Secrets and variables → Actions*) sous le nom `FLY_API_TOKEN`. Chaque push sur `main` lance les tests puis déploie (workflow `.github/workflows/fly-deploy.yml`).
+
+> ⚠️ Ne passe pas à plusieurs machines (`fly scale count 1` si besoin) : chaque machine aurait ses propres parties. Un redéploiement interrompt les parties en cours.
+
+### Autres options
+
+- **Render** : pousse ce dépôt sur GitHub, puis sur [render.com](https://render.com) → *New* → *Blueprint* → choisis le dépôt (le fichier `render.yaml` est déjà prêt). Tu obtiens une URL publique `https://….onrender.com` à partager.
+- **Docker** (n'importe quel VPS, Fly.io, Railway…) :
    ```bash
    docker build -t bataille-navale .
    docker run -p 3000:3000 bataille-navale
    ```
-3. **Depuis ton PC, via un tunnel** (le plus rapide pour une partie ponctuelle) :
+- **Depuis ton PC, via un tunnel** (le plus rapide pour une partie ponctuelle) :
    ```bash
    npm start
    npx cloudflared tunnel --url http://localhost:3000
