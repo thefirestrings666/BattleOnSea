@@ -2,6 +2,7 @@
 # Prérequis : secret GitHub FLY_API_TOKEN (jeton d'organisation Fly.io,
 # créé dans le tableau de bord Fly > Tokens, ou avec `fly tokens create org`).
 # L'app est créée automatiquement au premier déploiement.
+# (LY_API_TOKEN est accepté en secours : nom saisi par erreur à la création.)
 name: Déploiement Fly.io
 
 on:
@@ -36,7 +37,7 @@ jobs:
             exit 1
           fi
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN || secrets.LY_API_TOKEN }}
       - name: Créer l'app Fly si elle n'existe pas
         run: |
           APP=$(grep -E '^app *=' fly.toml | sed -E 's/^app *= *"([^"]+)".*/\1/')
@@ -49,8 +50,8 @@ jobs:
             }
           fi
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN || secrets.LY_API_TOKEN }}
       - name: Déployer
         run: flyctl deploy --remote-only --ha=false
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN || secrets.LY_API_TOKEN }}
